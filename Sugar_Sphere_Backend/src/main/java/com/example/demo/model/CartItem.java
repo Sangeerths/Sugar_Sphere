@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+public
 class CartItem {
     
     private String productId;
@@ -15,11 +16,11 @@ class CartItem {
     
     private String productImage;
     
-    private Double price;
+    private Integer price;
     
     private Integer quantity;
     
-    private Double subtotal;
+    private int subtotal;
     
     public void calculateSubtotal() {
         this.subtotal = this.price * this.quantity;

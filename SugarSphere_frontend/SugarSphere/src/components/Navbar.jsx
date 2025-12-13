@@ -15,22 +15,38 @@ const Navbar = () => {
     <nav className="bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
+          
+          {/* Logo */}
           <Link to="/" className="text-2xl font-bold flex items-center gap-2">
             🍬 Sweet Shop
           </Link>
-          
-          <div className="flex gap-4 items-center">
+
+          {/* Right Side */}
+          <div className="flex gap-5 items-center">
             {user ? (
               <>
                 <Link to="/dashboard" className="hover:text-pink-200 transition">
                   Dashboard
                 </Link>
+
+                {/* ✅ Cart Button */}
+                <Link
+                  to="/cart"
+                  className="relative bg-white text-pink-600 px-4 py-2 rounded-lg hover:bg-pink-100 transition font-semibold"
+                >
+                  🛒 Cart
+                </Link>
+
                 {isAdmin() && (
                   <Link to="/admin" className="hover:text-pink-200 transition">
                     Admin Panel
                   </Link>
                 )}
-                <span className="text-pink-200">Welcome, {user.username}!</span>
+
+                <span className="text-pink-200">
+                  Welcome, {user.username}!
+                </span>
+
                 <button
                   onClick={handleLogout}
                   className="bg-white text-pink-600 px-4 py-2 rounded-lg hover:bg-pink-100 transition"
@@ -40,10 +56,7 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link
-                  to="/login"
-                  className="hover:text-pink-200 transition"
-                >
+                <Link to="/login" className="hover:text-pink-200 transition">
                   Login
                 </Link>
                 <Link

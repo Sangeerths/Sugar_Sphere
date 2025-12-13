@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,4 +13,8 @@ public class StatusHistory {
     private String status;
     private String message;  // Changed from 'note' to 'message'
     private LocalDateTime timestamp;
+	public void setNote(String string) {
+		// TODO Auto-generated method stub
+		
+	}
 }

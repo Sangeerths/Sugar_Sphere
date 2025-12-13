@@ -53,7 +53,7 @@ public class CartService {
             CartItem newItem = new CartItem();
             newItem.setProductId(sweetId);
             newItem.setProductName(sweet.getName());
-            newItem.setProductImage(sweet.getImage());
+            newItem.setProductImage(sweet.getImageUrl());
             newItem.setPrice(sweet.getPrice());
             newItem.setQuantity(quantity);
             newItem.calculateSubtotal();

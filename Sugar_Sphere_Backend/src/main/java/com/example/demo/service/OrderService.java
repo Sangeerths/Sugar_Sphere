@@ -7,8 +7,10 @@ import java.util.Map;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.PaymentVerificationRequest;
 import com.example.demo.model.Cart;
 import com.example.demo.model.Order;
 import com.example.demo.model.StatusHistory;
@@ -18,8 +20,6 @@ import com.example.demo.repository.OrderRepository;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import com.razorpay.Utils;
-
-import lombok.Value;
 
 @Service
 public class OrderService {
@@ -104,7 +104,7 @@ public class OrderService {
         StatusHistory statusHistory = new StatusHistory();
         statusHistory.setStatus("confirmed");
         statusHistory.setTimestamp(LocalDateTime.now());
-        statusHistory.setNote("Order confirmed and payment received");
+        statusHistory.setMessage("Order confirmed and payment received");
         order.getStatusHistory().add(statusHistory);
         
         Order savedOrder = orderRepository.save(order);
@@ -147,7 +147,7 @@ public class OrderService {
         StatusHistory statusHistory = new StatusHistory();
         statusHistory.setStatus("cancelled");
         statusHistory.setTimestamp(LocalDateTime.now());
-        statusHistory.setNote("Order cancelled by user");
+        statusHistory.setMessage("Order cancelled by user");
         order.getStatusHistory().add(statusHistory);
         
         if (order.getPaymentStatus().equals("completed")) {
@@ -171,7 +171,7 @@ public class OrderService {
         StatusHistory statusHistory = new StatusHistory();
         statusHistory.setStatus(status);
         statusHistory.setTimestamp(LocalDateTime.now());
-        statusHistory.setNote(note != null ? note : "Order status updated to " + status);
+        statusHistory.setMessage(note != null ? note : "Order status updated to " + status);
         order.getStatusHistory().add(statusHistory);
         
         order.setUpdatedAt(LocalDateTime.now());
