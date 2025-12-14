@@ -11,7 +11,7 @@ public class SweetRequest {
     @NotBlank(message = "Name is required")
     private String name;
     
-    @NotBlank(message = "Category is required")
+    // Category is optional (can be null or empty, especially when editing)
     private String category;
     
     private String description;

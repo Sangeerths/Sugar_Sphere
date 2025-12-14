@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SweetCard = ({ sweet, onPurchase, isAdmin, onEdit, onDelete }) => {
+const SweetCard = ({ sweet, onPurchase, onAddToCart, isAdmin, onEdit, onDelete }) => {
   const isOutOfStock = sweet.quantity === 0;
 
   return (
@@ -31,17 +31,34 @@ const SweetCard = ({ sweet, onPurchase, isAdmin, onEdit, onDelete }) => {
 
         <div className="flex gap-2">
           {!isAdmin && (
-            <button
-              onClick={() => onPurchase(sweet.id)}
-              disabled={isOutOfStock}
-              className={`flex-1 py-2 rounded-lg font-semibold transition ${
-                isOutOfStock
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700'
-              }`}
-            >
-              Purchase
-            </button>
+            <>
+              {onAddToCart && (
+                <button
+                  onClick={() => onAddToCart(sweet._id || sweet.id)}
+                  disabled={isOutOfStock}
+                  className={`flex-1 py-2 rounded-lg font-semibold transition ${
+                    isOutOfStock
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700'
+                  }`}
+                >
+                  Add to Cart
+                </button>
+              )}
+              {onPurchase && (
+                <button
+                  onClick={() => onPurchase(sweet.id || sweet._id)}
+                  disabled={isOutOfStock}
+                  className={`flex-1 py-2 rounded-lg font-semibold transition ${
+                    isOutOfStock
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`}
+                >
+                  Buy Now
+                </button>
+              )}
+            </>
           )}
           
           {isAdmin && (

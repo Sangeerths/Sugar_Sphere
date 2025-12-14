@@ -16,8 +16,13 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(username, password);
-      navigate('/dashboard');
+      const userData = await login(username, password);
+      // Check if user is admin and redirect accordingly
+      if (userData?.roles?.includes('ADMIN')) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid username or password');
     } finally {

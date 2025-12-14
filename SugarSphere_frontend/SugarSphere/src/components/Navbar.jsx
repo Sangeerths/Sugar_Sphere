@@ -11,24 +11,37 @@ const Navbar = () => {
     navigate('/login');
   };
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <nav className="bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between relative">
           
-          {/* Logo */}
-          <Link to="/" className="text-2xl font-bold flex items-center gap-2">
-            🍬 Sweet Shop
+          {/* Left Side - Back Button */}
+          <button
+            onClick={handleBack}
+            className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition font-semibold flex items-center gap-2 backdrop-blur-sm z-10 flex-shrink-0"
+            title="Go back"
+          >
+            ← Back
+          </button>
+
+          {/* Center - Logo */}
+          <Link to="/" className="text-2xl font-bold flex items-center gap-2 absolute left-1/2 transform -translate-x-1/2 z-10 whitespace-nowrap">
+            🍬 Sugar Sphere
           </Link>
 
           {/* Right Side */}
-          <div className="flex gap-5 items-center">
+          <div className="flex gap-5 items-center ml-auto z-10 flex-shrink-0">
             {user ? (
               <>
-                <Link to="/dashboard" className="hover:text-pink-200 transition">
-                  Dashboard
-                </Link>
-
                 {/* ✅ Cart Button */}
                 <Link
                   to="/cart"

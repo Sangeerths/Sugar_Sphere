@@ -24,11 +24,18 @@ public class CartService {
 
     public Cart getCartByUser(User user) {
         Optional<Cart> cartOpt = cartRepository.findByUser(user);
+        Cart cart;
         if (cartOpt.isPresent()) {
-            return cartOpt.get();
+            cart = cartOpt.get();
+            // Ensure items list is never null
+            if (cart.getItems() == null) {
+                cart.setItems(new java.util.ArrayList<>());
+            }
+            cart.calculateTotals();
+            return cart;
         }
 
-        Cart cart = new Cart();
+        cart = new Cart();
         cart.setUser(user);
         cart.setCreatedAt(LocalDateTime.now());
         cart.setUpdatedAt(LocalDateTime.now());
@@ -38,11 +45,28 @@ public class CartService {
     public Cart addToCart(User user, String sweetId, Integer quantity) {
         Cart cart = getCartByUser(user);
 
-        Sweet sweet = sweetRepository.findById(sweetId)
-            .orElseThrow(() -> new RuntimeException("Sweet not found"));
+        // Try to parse as Integer (numeric id) first, if fails use as MongoDB _id
+        Sweet sweet;
+        String mongoId;
+        try {
+            Integer numericId = Integer.parseInt(sweetId);
+            sweet = sweetRepository.findByNumericId(numericId)
+                .orElseThrow(() -> new RuntimeException("Sweet not found"));
+            // Get MongoDB _id from the found sweet
+            mongoId = sweet.get_id() != null ? sweet.get_id() : sweetId;
+        } catch (NumberFormatException e) {
+            // sweetId is already a MongoDB _id
+            sweet = sweetRepository.findById(sweetId)
+                .orElseThrow(() -> new RuntimeException("Sweet not found"));
+            // Use the _id from the sweet, or fallback to sweetId
+            mongoId = sweet.get_id() != null ? sweet.get_id() : sweetId;
+        }
+        
+        // Final fallback - if mongoId is still null, use sweetId
+        final String finalMongoId = (mongoId != null) ? mongoId : sweetId;
 
         Optional<CartItem> existingItem = cart.getItems().stream()
-            .filter(item -> item.getProductId().equals(sweetId))
+            .filter(item -> item.getProductId().equals(finalMongoId))
             .findFirst();
 
         if (existingItem.isPresent()) {
@@ -51,7 +75,7 @@ public class CartService {
             item.calculateSubtotal();
         } else {
             CartItem newItem = new CartItem();
-            newItem.setProductId(sweetId);
+            newItem.setProductId(finalMongoId); // Use MongoDB _id for consistency
             newItem.setProductName(sweet.getName());
             newItem.setProductImage(sweet.getImageUrl());
             newItem.setPrice(sweet.getPrice());

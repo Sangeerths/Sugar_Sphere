@@ -60,6 +60,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/sweets/**").permitAll() // Allow public access to view sweets
+                .requestMatchers("/api/admin/create-admin").permitAll() // Allow creating first admin (remove this after creating admin)
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

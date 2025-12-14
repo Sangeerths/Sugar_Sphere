@@ -28,21 +28,25 @@ export const sweetService = {
   },
 
   updateSweet: async (id, sweetData) => {
-    const response = await api.put(`/sweets/${id}`, sweetData);
+    // Convert id to string to handle both MongoDB _id and numeric id
+    const response = await api.put(`/sweets/${String(id)}`, sweetData);
     return response.data;
   },
 
   deleteSweet: async (id) => {
-    await api.delete(`/sweets/${id}`);
+    // Convert id to string to handle both MongoDB _id and numeric id
+    await api.delete(`/sweets/${String(id)}`);
   },
 
   purchaseSweet: async (id) => {
-    const response = await api.post(`/sweets/${id}/purchase`);
+    // Convert id to string to handle both MongoDB _id and numeric id
+    const response = await api.post(`/sweets/${String(id)}/purchase`);
     return response.data;
   },
 
   restockSweet: async (id, quantity) => {
-    const response = await api.post(`/sweets/${id}/restock`, { quantity });
+    // Convert id to string to handle both MongoDB _id and numeric id
+    const response = await api.post(`/sweets/${String(id)}/restock`, { quantity });
     return response.data;
   },
 };

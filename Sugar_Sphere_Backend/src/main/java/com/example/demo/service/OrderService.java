@@ -13,10 +13,13 @@ import org.springframework.stereotype.Service;
 import com.example.demo.dto.PaymentVerificationRequest;
 import com.example.demo.model.Cart;
 import com.example.demo.model.Order;
+import com.example.demo.model.OrderItem;
 import com.example.demo.model.StatusHistory;
+import com.example.demo.model.Sweet;
 import com.example.demo.model.User;
 import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.OrderRepository;
+import com.example.demo.repository.SweetRepository;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import com.razorpay.Utils;
@@ -29,6 +32,9 @@ public class OrderService {
     
     @Autowired
     private CartRepository cartRepository;
+    
+    @Autowired
+    private SweetRepository sweetRepository;
     
     @Value("${razorpay.key.id}")
     private String razorpayKeyId;
@@ -109,6 +115,54 @@ public class OrderService {
         
         Order savedOrder = orderRepository.save(order);
         
+        // Log order creation for debugging
+        System.out.println("=== ORDER CREATED ===");
+        System.out.println("Order ID: " + savedOrder.getId());
+        System.out.println("Order Number: " + savedOrder.getOrderNumber());
+        System.out.println("Total Amount: " + savedOrder.getTotalAmount());
+        System.out.println("Items Count: " + savedOrder.getItems().size());
+        System.out.println("Order saved to MongoDB collection: orders");
+        
+        // Update stock for each item in the order
+        for (OrderItem item : savedOrder.getItems()) {
+            try {
+                // Try to find sweet by MongoDB _id first, then by numeric id
+                Sweet sweet = null;
+                String sweetId = item.getSweetId();
+                
+                try {
+                    // Try as MongoDB _id
+                    sweet = sweetRepository.findById(sweetId)
+                        .orElse(null);
+                    
+                    // If not found, try as numeric id
+                    if (sweet == null) {
+                        try {
+                            Integer numericId = Integer.parseInt(sweetId);
+                            sweet = sweetRepository.findByNumericId(numericId)
+                                .orElse(null);
+                        } catch (NumberFormatException e) {
+                            // Not a numeric ID, continue
+                        }
+                    }
+                    
+                    if (sweet != null && sweet.getQuantity() != null) {
+                        int newQuantity = sweet.getQuantity() - item.getQuantity();
+                        if (newQuantity < 0) {
+                            newQuantity = 0;
+                        }
+                        sweet.setQuantity(newQuantity);
+                        sweetRepository.save(sweet);
+                    }
+                } catch (Exception e) {
+                    // Log error but don't fail the order
+                    System.err.println("Error updating stock for sweet " + sweetId + ": " + e.getMessage());
+                }
+            } catch (Exception e) {
+                System.err.println("Error processing order item: " + e.getMessage());
+            }
+        }
+        
         Cart cart = cartRepository.findByUser(user).orElse(null);
         if (cart != null) {
             cart.getItems().clear();
@@ -176,5 +230,43 @@ public class OrderService {
         
         order.setUpdatedAt(LocalDateTime.now());
         return orderRepository.save(order);
+    }
+    
+    public Map<String, Object> getRevenueStats() {
+        List<Order> allOrders = orderRepository.findAll();
+        
+        double totalRevenue = allOrders.stream()
+            .filter(order -> "completed".equals(order.getPaymentStatus()))
+            .mapToDouble(order -> order.getTotalAmount() != null ? order.getTotalAmount() : 0.0)
+            .sum();
+        
+        long totalOrders = allOrders.size();
+        long completedOrders = allOrders.stream()
+            .filter(order -> "completed".equals(order.getPaymentStatus()))
+            .count();
+        
+        long pendingOrders = allOrders.stream()
+            .filter(order -> "pending".equals(order.getOrderStatus()) || "confirmed".equals(order.getOrderStatus()))
+            .count();
+        
+        double todayRevenue = allOrders.stream()
+            .filter(order -> {
+                if (order.getCreatedAt() == null) return false;
+                LocalDateTime today = LocalDateTime.now();
+                LocalDateTime orderDate = order.getCreatedAt();
+                return orderDate.toLocalDate().equals(today.toLocalDate()) 
+                    && "completed".equals(order.getPaymentStatus());
+            })
+            .mapToDouble(order -> order.getTotalAmount() != null ? order.getTotalAmount() : 0.0)
+            .sum();
+        
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalRevenue", totalRevenue);
+        stats.put("todayRevenue", todayRevenue);
+        stats.put("totalOrders", totalOrders);
+        stats.put("completedOrders", completedOrders);
+        stats.put("pendingOrders", pendingOrders);
+        
+        return stats;
     }
 }

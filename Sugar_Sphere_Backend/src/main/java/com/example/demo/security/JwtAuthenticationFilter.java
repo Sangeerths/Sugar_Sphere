@@ -33,15 +33,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
             
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String username = tokenProvider.getUsernameFromToken(jwt);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                
-                UsernamePasswordAuthenticationToken authentication = 
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (StringUtils.hasText(jwt)) {
+                if (tokenProvider.validateToken(jwt)) {
+                    String username = tokenProvider.getUsernameFromToken(jwt);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    
+                    UsernamePasswordAuthenticationToken authentication = 
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.debug("Successfully authenticated user: " + username);
+                } else {
+                    logger.warn("Invalid JWT token for request: " + request.getRequestURI());
+                }
+            } else {
+                logger.debug("No JWT token found in request: " + request.getRequestURI());
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);

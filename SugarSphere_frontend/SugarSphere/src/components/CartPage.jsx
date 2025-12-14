@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { cartService } from '../services/cartService';
 import './CartPage.css';
 
 const CartPage = () => {
@@ -14,56 +14,63 @@ const CartPage = () => {
 
   const fetchCart = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8080/api/cart', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setCart(response.data.data);
+      const response = await cartService.getCart();
+      if (response && response.success && response.data) {
+        // Ensure items array exists
+        const cartData = {
+          ...response.data,
+          items: response.data.items || []
+        };
+        setCart(cartData);
+      } else {
+        // If response is not successful, set empty cart
+        setCart({ items: [], totalAmount: 0, itemCount: 0 });
+      }
       setLoading(false);
     } catch (error) {
       console.error('Error fetching cart:', error);
+      setCart({ items: [], totalAmount: 0, itemCount: 0 });
       setLoading(false);
     }
   };
 
   const updateQuantity = async (productId, quantity) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.put(
-        'http://localhost:8080/api/cart/update',
-        { productId, quantity },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCart(response.data.data);
+      const response = await cartService.updateCartItem(productId, quantity);
+      if (response && response.success && response.data) {
+        setCart(response.data);
+      }
+      fetchCart(); // Refresh cart to ensure consistency
     } catch (error) {
       console.error('Error updating quantity:', error);
+      alert('Failed to update quantity. Please try again.');
     }
   };
 
   const removeItem = async (productId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.delete(
-        `http://localhost:8080/api/cart/remove/${productId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCart(response.data.data);
+      const response = await cartService.removeFromCart(productId);
+      if (response && response.success && response.data) {
+        setCart(response.data);
+      }
+      fetchCart(); // Refresh cart to ensure consistency
     } catch (error) {
       console.error('Error removing item:', error);
+      alert('Failed to remove item. Please try again.');
     }
   };
 
   const clearCart = async () => {
     if (window.confirm('Are you sure you want to clear your cart?')) {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.delete(
-          'http://localhost:8080/api/cart/clear',
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setCart(response.data.data);
+        const response = await cartService.clearCart();
+        if (response && response.success && response.data) {
+          setCart(response.data);
+        }
+        fetchCart(); // Refresh cart to ensure consistency
       } catch (error) {
         console.error('Error clearing cart:', error);
+        alert('Failed to clear cart. Please try again.');
       }
     }
   };
@@ -72,12 +79,12 @@ const CartPage = () => {
     return <div className="loading">Loading cart...</div>;
   }
 
-  if (!cart || cart.items.length === 0) {
+  if (!cart || !cart.items || cart.items.length === 0) {
     return (
       <div className="empty-cart">
         <h2>Your cart is empty</h2>
         <p>Add some delicious treats to get started!</p>
-        <button onClick={() => navigate('/products')} className="btn-primary">
+        <button onClick={() => navigate('/dashboard')} className="btn-primary">
           Browse Products
         </button>
       </div>
@@ -161,7 +168,7 @@ const CartPage = () => {
               Proceed to Checkout
             </button>
             <button
-              onClick={() => navigate('/products')}
+              onClick={() => navigate('/dashboard')}
               className="btn-continue"
             >
               Continue Shopping

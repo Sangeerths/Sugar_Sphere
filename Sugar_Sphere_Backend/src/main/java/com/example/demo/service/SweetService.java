@@ -62,9 +62,19 @@ public class SweetService {
     }
     
     public Sweet updateSweet(String id, SweetRequest request) {
-        Sweet sweet = getSweetById(id);
+        // Try to parse as Integer (numeric id) first, if fails use as MongoDB _id
+        Sweet sweet;
+        try {
+            Integer numericId = Integer.parseInt(id);
+            sweet = getSweetByNumericId(numericId);
+        } catch (NumberFormatException e) {
+            sweet = getSweetById(id);
+        }
+        
         sweet.setName(request.getName());
-        sweet.setCategory(request.getCategory());
+        if (request.getCategory() != null) {
+            sweet.setCategory(request.getCategory());
+        }
         sweet.setDescription(request.getDescription());
         if (request.getPrice() != null) {
             sweet.setPrice(request.getPrice().intValue());
@@ -76,7 +86,14 @@ public class SweetService {
     }
     
     public void deleteSweet(String id) {
-        Sweet sweet = getSweetById(id);
+        // Try to parse as Integer (numeric id) first, if fails use as MongoDB _id
+        Sweet sweet;
+        try {
+            Integer numericId = Integer.parseInt(id);
+            sweet = getSweetByNumericId(numericId);
+        } catch (NumberFormatException e) {
+            sweet = getSweetById(id);
+        }
         sweetRepository.delete(sweet);
     }
     

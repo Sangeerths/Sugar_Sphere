@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { sweetService } from '../services/sweetService';
+import { cartService } from '../services/cartService';
 import { useAuth } from '../context/AuthContext';
 import SweetCard from './SweetCard';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [sweets, setSweets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [category, setCategory] = useState('');
   const [error, setError] = useState('');
   const { isAdmin } = useAuth();
 
@@ -39,7 +41,7 @@ const Dashboard = () => {
   const handleSearch = async () => {
     try {
       setLoading(true);
-      const data = await sweetService.searchSweets(searchTerm, category);
+      const data = await sweetService.searchSweets(searchTerm, null);
       setSweets(data);
     } catch (err) {
       setError('Search failed');
@@ -48,13 +50,35 @@ const Dashboard = () => {
     }
   };
 
-  const handlePurchase = async (id) => {
+  const handlePurchase = async (sweet) => {
+    // Redirect to checkout with single item
+    navigate('/checkout', { state: { item: sweet } });
+  };
+
+  const handleAddToCart = async (id) => {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login to add items to cart');
+      navigate('/login');
+      return;
+    }
+
     try {
-      await sweetService.purchaseSweet(id);
-      alert('Purchase successful!');
-      loadSweets();
+      const response = await cartService.addToCart(id, 1);
+      if (response && response.success) {
+        alert('Item added to cart!');
+      } else {
+        alert(response?.message || 'Failed to add to cart');
+      }
     } catch (err) {
-      alert(err.response?.data?.message || 'Purchase failed');
+      console.error('Add to cart error:', err);
+      if (err.response?.status === 403) {
+        alert('Session expired. Please login again.');
+        navigate('/login');
+      } else {
+        alert(err.response?.data?.message || err.message || 'Failed to add to cart');
+      }
     }
   };
 
@@ -80,30 +104,23 @@ const Dashboard = () => {
         )}
 
         {/* Search Bar */}
-        <div className="max-w-4xl mx-auto mb-8 bg-white rounded-xl shadow-lg p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="max-w-2xl mx-auto mb-8 bg-white rounded-xl shadow-lg p-6">
+          <div className="flex gap-4">
             <input
               type="text"
               placeholder="Search sweets..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch();
+                }
+              }}
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
             />
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
-            >
-              <option value="">All Categories</option>
-              <option value="Chocolate">Chocolate</option>
-              <option value="Candy">Candy</option>
-              <option value="Gummy">Gummy</option>
-              <option value="Lollipop">Lollipop</option>
-              <option value="Hard Candy">Hard Candy</option>
-            </select>
             <button
               onClick={handleSearch}
-              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition"
+              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition"
             >
               Search
             </button>
@@ -122,7 +139,8 @@ const Dashboard = () => {
               <SweetCard
                 key={sweet.id || sweet._id || index}
                 sweet={sweet}
-                onPurchase={handlePurchase}
+                onPurchase={() => handlePurchase(sweet)}
+                onAddToCart={() => handleAddToCart(sweet._id || sweet.id)}
                 isAdmin={false}
               />
             ))}
