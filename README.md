@@ -307,6 +307,12 @@ Contributions are welcome! Please follow these steps:
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+## Screen Shots
+<img width="1918" height="978" alt="Screenshot 2025-12-14 215433" src="https://github.com/user-attachments/assets/da00074f-288a-40d4-9ea2-a1d6cded50f0" />
+<img width="1919" height="1024" alt="Screenshot 2025-12-14 215621" src="https://github.com/user-attachments/assets/0288889c-19c6-4499-b32d-4f7ae176c25b" />
+<img width="1919" height="890" alt="Screenshot 2025-12-14 215650" src="https://github.com/user-attachments/assets/5025c595-e991-4cd8-89ee-ff60ac8b1dd0" />
+<img width="1916" height="924" alt="Screenshot 2025-12-14 215713" src="https://github.com/user-attachments/assets/a90e54d9-a0cc-4ace-84bd-cbc0efa5f9c1" />
+<img width="1919" height="860" alt="Screenshot 2025-12-14 215719" src="https://github.com/user-attachments/assets/ebce142e-74c5-4289-9e18-99b0128252e5" />
 
 ## 📝 License
 
