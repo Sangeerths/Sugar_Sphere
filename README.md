@@ -109,7 +109,7 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone [<repository-url>](https://github.com/Sangeerths/Sugar_Sphere)
 cd Sugar_Sphere-main
 ```
 
