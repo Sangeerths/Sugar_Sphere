@@ -314,7 +314,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 👥 Authors
 
-- Your Name - Initial work
+- Sangeerth S
 
 ## 🙏 Acknowledgments
 
@@ -326,7 +326,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📞 Support
 
-For support, email your-email@example.com or open an issue in the repository.
+For support, email sangeerth829@gmail.com or open an issue in the repository.
 
 ---
 
